@@ -17,12 +17,40 @@ const RecipientRegistration = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    addRecipient(formData);
-    alert('Thank you for registering as a recipient!');
-    setFormData({ name: '', email: '', phone: '', organNeeded: '' });
+
+    try {
+      const response = await fetch('http://localhost:8000/patients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          blood_type: 'O+',  // Assuming you don't have blood type in the form yet
+          organ_needed: formData.organNeeded,
+          urgency_level: 2, // You can modify this based on your form or app's needs
+          registered_at: new Date().toISOString(),  // Optional, can be handled server-side if needed
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to register patient');
+      }
+
+      const data = await response.json();
+      console.log('Patient successfully added:', data);
+      alert('Thank you for registering as a recipient!');
+
+      // Reset the form after submission
+      setFormData({ name: '', email: '', phone: '', organNeeded: '' });
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error during registration, please try again later.');
+    }
   };
+
 
   return (
     <motion.div className="recipient-registration-container">
